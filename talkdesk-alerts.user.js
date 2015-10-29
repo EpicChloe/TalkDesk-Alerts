@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TalkDesk Alerts
 // @namespace    TDAA
-// @version      1.0
+// @version      1.1
 // @description  Marks Agents in TalkDesk that have long talk times as well as coloring calls in queue and longest wait.
 // @author       Chris Pittelko
 // @match        https://*.mytalkdesk.com/
@@ -21,9 +21,9 @@
     */
     
     var callLength = '30:00',
-        callsWaitingWarning = 10,
-        callsWaitingDanger = 20,
-        waitTimeWarning = '8:00',
+        callsWaitingWarning = 5,
+        callsWaitingDanger = 15,
+        waitTimeWarning = '08:00',
         waitTimeDanger = '20:00';
     
     // Adding css
@@ -32,13 +32,7 @@
     GM_addStyle('.bg-danger{background-color:#f2dede};');
 
     // Adding Agent Listing Clocks to watch list
-    waitForKeyElements('.clock', highlightAgents);
-    
-    // Adding Calls in Queue to watch list
-    waitForKeyElements('#waiting_queue_size', highlightQueueSize);
-    
-    // Adding Longest Wait Time in Queue to watch list
-    waitForKeyElements('#longest_waiting_time', highlightQueueTime);
+    waitForKeyElements('.clock', highlightAgents, false);
     
     // Highlight Agents with talk times over [callLength]
     function highlightAgents(jNode) {
@@ -52,48 +46,56 @@
         }
         
     };
- 
-    // Color code Queue size based on [callsWaitingWarning][callsWaitingDanger]
-    function highlightQueueSize(jNode) {
     
-        var queueSize = jNode.text().replace('Calls in Queue', '');
+    // waitForKeyElements doesn't catch Call Queue updates and Longest Wait Time updates.
+    // Creating interval to check elements
+    setInterval( function() {
         
-        jNode.addClass('bg-success');
+        // Variable creation
+        var qNode = $('#waiting_queue_size h1'),
+            queueSize = qNode.text(),
+            tNode = $('#longest_waiting_time h1'),
+            queueTime = hmsToSeconds(tNode.text());
+        
+        console.log('Ping');
+        
+        // Clearing existing classes
+        qNode.parent().removeClass('bg-success').removeClass('bg-warning').removeClass('bg-danger');
+        tNode.parent().removeClass('bg-success').removeClass('bg-warning').removeClass('bg-danger');
+        
+        // Color code Queue size based on [callsWaitingWarning][callsWaitingDanger]
+        
+        qNode.parent().addClass('bg-success');
         
         if ( queueSize >= callsWaitingWarning ) {
             
-            jNode.addClass('bg-warning');
+            qNode.parent().addClass('bg-warning');
             
         }
         
         if ( queueSize >= callsWaitingDanger ) {
             
-            jNode.addClass('bg-danger');
+            qNode.parent().addClass('bg-danger');
             
         }
-    
-    };
-    
-    // Color code Longest Wait Time based on [waitTimeWarning][waitTimeDanger]
-    function highlightQueueTime(jNode) {
-    
-        var queueTime = hmsToSeconds(jNode.text().replace('Longest Wait Time', ''));
         
-        jNode.addClass('bg-success');
+        // Color code Longest Wait Time based on [waitTimeWarning][waitTimeDanger]
+        
+        tNode.parent().addClass('bg-success');
         
         if ( queueTime >= hmsToSeconds(waitTimeWarning) ) {
             
-            jNode.addClass('bg-warning');
+            tNode.parent().addClass('bg-warning');
             
         }
         
         if ( queueTime >= hmsToSeconds(waitTimeDanger) ) {
             
-            jNode.addClass('bg-danger');
+            tNode.parent().addClass('bg-danger');
             
         }
-    
-    };
+        
+    }, 5000); // Set interval to 5 seconds
     
     // Helper Functions
     // Converts hh:mm:ss to seconds
