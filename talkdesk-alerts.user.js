@@ -1,12 +1,13 @@
 // ==UserScript==
 // @name         TalkDesk Alerts
 // @namespace    TDAA
-// @version      1.1
+// @version      1.2
 // @description  Marks Agents in TalkDesk that have long talk times as well as coloring calls in queue and longest wait.
 // @author       Chris Pittelko
 // @match        https://*.mytalkdesk.com/
 // @require      https://gist.github.com/raw/2625891/waitForKeyElements.js
 // @require      https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js
+// @updateURL    https://github.com/EpicChloe/TalkDesk-Alerts/raw/master/talkdesk-alerts.user.js
 // @grant        GM_addStyle
 // ==/UserScript==
 
@@ -27,9 +28,9 @@
         waitTimeDanger = '20:00';
     
     // Adding css
-    GM_addStyle('.bg-success{background-color:#dff0d8};');
-    GM_addStyle('.bg-warning{background-color:#fcf8e3};');
-    GM_addStyle('.bg-danger{background-color:#f2dede};');
+    GM_addStyle('.bg-success{background-color:#dff0d8 !important};');
+    GM_addStyle('.bg-warning{background-color:#fcf8e3 !important};');
+    GM_addStyle('.bg-danger{background-color:#f2dede !important};');
 
     // Adding Agent Listing Clocks to watch list
     waitForKeyElements('.clock', highlightAgents, false);
@@ -41,7 +42,7 @@
         
         if ( seconds >= hmsToSeconds(callLength) ) {
          
-            jNode.parent().css('background', 'red').css('color', 'white');
+            jNode.parent().parent().addClass('bg-danger');
             
         }
         
